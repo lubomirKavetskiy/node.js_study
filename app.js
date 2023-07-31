@@ -1,10 +1,24 @@
-const Logger = require('./log');
-const logger = new Logger();
+const fs = require('fs');
+const zlib = require('zlib');
 
-logger.on('log_in_event', (args) => {
-  const {id, name} = args;
+const readStream = fs.createReadStream('./docs/text.txt', { encoding: 'utf8' });
+const writeStream = fs.createWriteStream('./docs/new-text.txt');
+const compressedStream = zlib.createGzip();
 
-  console.log({id, name});
-});
+// readStream.on('data', (chunk) => {
+//   writeStream.write('\nNEW CHUNK\n');
+//   writeStream.write(chunk);
+//   writeStream.write('\nEND CHUNK\n');
+// });
 
-logger.log('User logged!');
+const handleErrors = (err) => {
+  console.log('ERROR: ', err);
+  readStream.destroy();
+  writeStream.end('Finished with error...');
+};
+
+readStream
+  .on('error', handleErrors)
+  .pipe(compressedStream)
+  .pipe(writeStream)
+  .on('error', handleErrors);
