@@ -1,32 +1,50 @@
-const { error } = require('console');
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
 const PORT = 3000;
 
 const server = http.createServer((req, res) => {
-  // console.log('Server request', req.url, req.method, req.headers);
+  res.setHeader('Content-Type', 'text/html');
 
-  // res.setHeader('Content-Type', 'text/html');
+  const createPath = (page) => path.resolve(__dirname, 'views', `${page}.html`);
 
-  // res.write('<head><link rel="stylesheet" href="#"/></head>');
-  // res.write('<h1>Hello from Node.js</h1>');
-  // res.write('<p>My name is Lubomir</p>');
+  let basePath = '';
 
-  res.setHeader('Content-Type', 'application/json');
-  const data = JSON.stringify({
-    name: 'Lubomir',
-    age: 36,
-    job: 'Frontend'
+  switch(req.url) {
+    case '/':
+    case '/home':
+      basePath = createPath('index');
+      res.statusCode = 200;
+      break;
+    case '/about':
+      res.statusCode = 301;
+      res.setHeader('Location', '/contacts');
+      res.end();
+      break;
+    case '/contacts':
+      basePath = createPath('contacts');
+      res.statusCode = 200;
+      break;
+    default:
+      basePath = createPath('error');
+      res.statusCode = 404;
+      break;
+  }
+
+  fs.readFile(basePath, (err, data) => {
+    if(err) {
+      console.log(err);
+      res.statusCode = 500;
+      res.end();
+    } else {
+      res.end(data);
+    }
   });
-  res.write(data);
-
-  res.end();
-} );
+});
 
 server.listen(PORT, 'localhost', error => {
-  if (error) {
-    console.log('Error starting server');
-  } else {
-    console.log(`Listening port ${PORT}`);
-  }
+  error
+  ? console.log('Error starting server')
+  : console.log(`Listening port ${PORT}`);
 });
