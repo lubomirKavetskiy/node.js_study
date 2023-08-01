@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const morgan = require('morgan')
+const morgan = require('morgan');
 
 const app = express();
 
@@ -17,6 +17,8 @@ app.listen(PORT, 'localhost', error => {
 });
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
+
+app.use(express.urlencoded({extended: false}));
 
 app.use(express.static('styles'));
 
@@ -40,14 +42,35 @@ app.get('/contacts', (req, res) => {
 
 app.get('/posts/:id', (req, res) => {
   const title = 'Post';
+  const post = {
+    id: '1',
+    text: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente quidem provident, dolores, vero laboriosam nemo mollitia impedit unde fugit sint eveniet, minima odio ipsum sed recusandae aut iste aspernatur dolorem.',
+    title: 'Post title',
+    date: '01.08.2023',
+    author: 'Lubomir',
+  };
 
-  res.render(createPath('post'), {title});
+  res.render(createPath('post'), {title, post});
 });
 
 app.get('/posts', (req, res) => {
   const title = 'Posts';
+  const posts = [{
+    id: '1',
+    text: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente quidem provident, dolores, vero laboriosam nemo mollitia impedit unde fugit sint eveniet, minima odio ipsum sed recusandae aut iste aspernatur dolorem.',
+    title: 'Post title',
+    date: '01.08.2023',
+    author: 'Lubomir',
+  }];
 
-  res.render(createPath('posts'), {title});
+  res.render(createPath('posts'), {title, posts});
+});
+
+app.post('/add-post', (req, res) => {
+  const {title, author, text} = req.body;
+  const post = {id: new Date(), title, author, text, date: new Date().toLocaleDateString()};
+
+  res.render(createPath('post'), {title: 'Post', post});
 });
 
 app.get('/add-post', (req, res) => {
