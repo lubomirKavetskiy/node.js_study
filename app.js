@@ -1,39 +1,24 @@
 const fs = require('fs');
+const zlib = require('zlib');
 
-fs.readFile('./test.txt', 'utf8', (err, data) => {
-    if (err) {
-        console.log('Error reading file:', err);
-        return;
-    }
+const readStream = fs.createReadStream('./docs/text.txt', { encoding: 'utf8' });
+const writeStream = fs.createWriteStream('./docs/new-text.txt');
+const compressedStream = zlib.createGzip();
 
-    fs.mkdirSync('./files', { recursive: true }, (err) => {
-      if (err) {
-        console.log('Error creating directory:', err);
-        return;
-      }
-    });
+// readStream.on('data', (chunk) => {
+//   writeStream.write('\nNEW CHUNK\n');
+//   writeStream.write(chunk);
+//   writeStream.write('\nEND CHUNK\n');
+// });
 
-    fs.writeFileSync('./files/test_2.txt', `${data} and Additional text`, (err) => {
-        if (err) {
-          console.log('Error writing file:', err);
-          return;
-        }
-      });
-    console.log('File read:', data);
-});
+const handleErrors = (err) => {
+  console.log('ERROR: ', err);
+  readStream.destroy();
+  writeStream.end('Finished with error...');
+};
 
-setTimeout(() => {
-  if(fs.existsSync('./files/test_2.txt')) {
-    fs.unlinkSync('./files/test_2.txt', (err) => {});
-  }
-}, 4000);
-
-setTimeout(() => {
-  if(fs.existsSync('./files')) {
-    fs.rmdirSync('./files', { recursive: true }, (err) => {});
-  };
-}, 7000);
-
-console.log('Just test');
-
-
+readStream
+  .on('error', handleErrors)
+  .pipe(compressedStream)
+  .pipe(writeStream)
+  .on('error', handleErrors);
