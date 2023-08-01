@@ -1,39 +1,32 @@
-const fs = require('fs');
+const { error } = require('console');
+const http = require('http');
 
-fs.readFile('./test.txt', 'utf8', (err, data) => {
-    if (err) {
-        console.log('Error reading file:', err);
-        return;
-    }
+const PORT = 3000;
 
-    fs.mkdirSync('./files', { recursive: true }, (err) => {
-      if (err) {
-        console.log('Error creating directory:', err);
-        return;
-      }
-    });
+const server = http.createServer((req, res) => {
+  // console.log('Server request', req.url, req.method, req.headers);
 
-    fs.writeFileSync('./files/test_2.txt', `${data} and Additional text`, (err) => {
-        if (err) {
-          console.log('Error writing file:', err);
-          return;
-        }
-      });
-    console.log('File read:', data);
-});
+  // res.setHeader('Content-Type', 'text/html');
 
-setTimeout(() => {
-  if(fs.existsSync('./files/test_2.txt')) {
-    fs.unlinkSync('./files/test_2.txt', (err) => {});
+  // res.write('<head><link rel="stylesheet" href="#"/></head>');
+  // res.write('<h1>Hello from Node.js</h1>');
+  // res.write('<p>My name is Lubomir</p>');
+
+  res.setHeader('Content-Type', 'application/json');
+  const data = JSON.stringify({
+    name: 'Lubomir',
+    age: 36,
+    job: 'Frontend'
+  });
+  res.write(data);
+
+  res.end();
+} );
+
+server.listen(PORT, 'localhost', error => {
+  if (error) {
+    console.log('Error starting server');
+  } else {
+    console.log(`Listening port ${PORT}`);
   }
-}, 4000);
-
-setTimeout(() => {
-  if(fs.existsSync('./files')) {
-    fs.rmdirSync('./files', { recursive: true }, (err) => {});
-  };
-}, 7000);
-
-console.log('Just test');
-
-
+});
