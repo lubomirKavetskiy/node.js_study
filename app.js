@@ -1,39 +1,10 @@
-const fs = require('fs');
+const Logger = require('./log');
+const logger = new Logger();
 
-fs.readFile('./test.txt', 'utf8', (err, data) => {
-    if (err) {
-        console.log('Error reading file:', err);
-        return;
-    }
+logger.on('log_in_event', (args) => {
+  const {id, name} = args;
 
-    fs.mkdirSync('./files', { recursive: true }, (err) => {
-      if (err) {
-        console.log('Error creating directory:', err);
-        return;
-      }
-    });
-
-    fs.writeFileSync('./files/test_2.txt', `${data} and Additional text`, (err) => {
-        if (err) {
-          console.log('Error writing file:', err);
-          return;
-        }
-      });
-    console.log('File read:', data);
+  console.log({id, name});
 });
 
-setTimeout(() => {
-  if(fs.existsSync('./files/test_2.txt')) {
-    fs.unlinkSync('./files/test_2.txt', (err) => {});
-  }
-}, 4000);
-
-setTimeout(() => {
-  if(fs.existsSync('./files')) {
-    fs.rmdirSync('./files', { recursive: true }, (err) => {});
-  };
-}, 7000);
-
-console.log('Just test');
-
-
+logger.log('User logged!');
