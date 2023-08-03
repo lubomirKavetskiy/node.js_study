@@ -1,12 +1,21 @@
 const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
+const mongoose = require('mongoose');
+
+const Post = require('./models/post');
 
 const app = express();
 
 const createPath = (page) => path.resolve(__dirname, 'ejs-views', `${page}.ejs`);
 
 const PORT = 3000;
+const db = 'mongodb+srv://lubomirkavetskiy:qwerty1Q@cluster0.k0fqd4t.mongodb.net/node-blog?retryWrites=true&w=majority'
+
+mongoose
+  .connect(db, {useNewUrlParser: true, useUnifiedTopology: true})
+  .then(()=> console.log('MongoDB connected'))
+  .catch((err)=> console.log(err));
 
 app.set('view engine', 'ejs');
 
@@ -68,10 +77,17 @@ app.get('/posts', (req, res) => {
 
 app.post('/add-post', (req, res) => {
   const {title, author, text} = req.body;
-  const post = {id: new Date(), title, author, text, date: new Date().toLocaleDateString()};
+  const post = new Post({title, author, text});
 
-  res.render(createPath('post'), {title: 'Post', post});
+  post
+    .save()
+    .then((result)=> res.send(result))
+    .catch((err)=> {
+      console.log(err);
+      res.redirect(404, createPath('error'), {title: 'Error page'});
+    });
 });
+
 
 app.get('/add-post', (req, res) => {
   const title = 'Add post';
